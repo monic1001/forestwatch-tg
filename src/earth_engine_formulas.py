@@ -1,3 +1,11 @@
+# -----------------------------------------------------------------------------
+# Copyright (c) 2025-2026 Kodjo Jean DEGBEVI. All rights reserved.
+# Licensed under the CC-BY-NC-4.0 License. See LICENSE file in the project root.
+#
+# Project: ForestWatch Togo - Land Cover & Deforestation AI Monitor
+# Author: Kodjo Jean DEGBEVI (@kjd-dktech)
+# -----------------------------------------------------------------------------
+
 import pandas as pd
 import numpy as np
 
@@ -11,7 +19,6 @@ def calculate_indices(df: pd.DataFrame) -> pd.DataFrame:
         if band not in df.columns:
             raise ValueError(f"La bande brute {band} est requise pour calculer les indices spectraux.")
 
-    # Copie pour éviter SettingWithCopyWarning
     computed_df = df.copy()
 
     # NDVI = (NIR - Red) / (NIR + Red)
@@ -30,7 +37,7 @@ def has_minimum_glcm_features(df: pd.DataFrame, expected_features: list) -> bool
     """
     Vérifie si le DataFrame contient au moins les features GLCM minimales requises
     pour inférer le modèle, même s'il ne s'agit pas d'un pixel isolé brut.
-    L'API demande un minimum de contexte spatial (par ex. pour B8_contrast, etc.)
+    L'API demande un minimum de contexte spatial
     """
     missing_features = [feat for feat in expected_features if feat not in df.columns]
     

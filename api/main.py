@@ -1,3 +1,11 @@
+# -----------------------------------------------------------------------------
+# Copyright (c) 2025-2026 Kodjo Jean DEGBEVI. All rights reserved.
+# Licensed under the CC-BY-NC-4.0 License. See LICENSE file in the project root.
+#
+# Project: ForestWatch Togo - Land Cover & Deforestation AI Monitor
+# Author: Kodjo Jean DEGBEVI (@kjd-dktech)
+# -----------------------------------------------------------------------------
+
 import sys
 import os
 from pathlib import Path
@@ -13,16 +21,14 @@ from logging.handlers import RotatingFileHandler
 import json
 from dotenv import load_dotenv
 
-# --- Chargement des variables d'environnement ---
 load_dotenv()
 API_KEY = os.getenv("API_KEY", "not_set")
-# --- Configuration des chemins et imports ---
+
 CURRENT_FILE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = CURRENT_FILE_DIR.parent
 LOG_DIR = CURRENT_FILE_DIR / "logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-# --- Configuration du Logger ---
 logger = logging.getLogger("API")
 logger.setLevel(logging.INFO)
 if not logger.handlers:
@@ -34,30 +40,25 @@ if not logger.handlers:
     ch.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
     logger.addHandler(ch)
 
-# Ajout du root au path pour permettre l'import de 'src.predict'
 if str(REPO_ROOT) not in sys.path:
     sys.path.append(str(REPO_ROOT))
 
-# Import du module de prédiction
 try:
     from src.predict import LandCoverPredictor
     predictor = LandCoverPredictor()
     EXPECTED_FEATURES = predictor.expected_features.tolist()
 except Exception as e:
-    # On gère l'erreur pour que l'API puisse au moins démarrer et renvoyer le statut
     logger.error(f"❌ Erreur CRITIQUE d'import du Predictor : {e}")
     predictor = None
     EXPECTED_FEATURES = []
 
 
-# --- Configuration de l'API ---
 app = FastAPI(
     title="ForestWatch Togo API",
     description="API de prédiction de classification d'occupation des sols et déforestation",
     version="1.0.0"
 )
 
-# Configuration CORS pour autoriser les requêtes cross-origin (ex: depuis une WebApp ou GEE)
 origins = [
     "*",
 ]
@@ -66,11 +67,10 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"], # Autorise toutes les méthodes (GET, POST, etc.)
-    allow_headers=["*"], # Autorise tous les headers
+    allow_methods=["*"], 
+    allow_headers=["*"], 
 )
 
-# --- Sécurité par clé API ---
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=True)
 
 def verify_api_key(api_key: str = Security(api_key_header)):
@@ -91,13 +91,12 @@ def read_root():
 @app.post("/predict/file/")
 async def predict_file(file: UploadFile = File(...), api_key: str = Depends(verify_api_key)):
     """
-    Endpoint global acceptant un fichier CSV, JSON, GeoJSON ou Excel (xlsx, xls).
-    Gère la détection de format et renvoie les prédictions.
+    Endpoint acceptant un fichier CSV, JSON, GeoJSON ou Excel (xlsx, xls).
+    Retourne les prédictions d'occupation des sols.
     """
     logger.info(f"📁 Fichier reçu : {file.filename}")
     
-    # 1. Barrière I : Contrôle de la taille du fichier
-    max_file_size = 50 * 1024 * 1024 # 50 MB
+    max_file_size = 50 * 1024 * 1024
     
     if file.size and file.size > max_file_size:
         logger.warning(f"Rejet: Fichier trop volumineux ({file.size} bytes). Limite: {max_file_size} bytes.")
@@ -108,15 +107,12 @@ async def predict_file(file: UploadFile = File(...), api_key: str = Depends(veri
         raise HTTPException(status_code=503, detail="Modèle IA non chargé sur le serveur.")
 
     try:
-        # Lire le contenu du fichier uploadé en mémoire
         contents = await file.read()
         
-        # 2e Barrière (Secours si file.size n'était pas évalué par Uvicorn)
         if len(contents) > max_file_size:
             logger.warning(f"Rejet post-lecture: Fichier trop volumineux ({len(contents)} bytes).")
             raise HTTPException(status_code=413, detail="Payload Too Large: Le fichier d'entrée dépasse la limite autorisée.")
             
-        # Détection du format (CSV, Excel ou JSON/GeoJSON)
         if file.filename.endswith('.csv'):
             df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
         elif file.filename.endswith(('.xls', '.xlsx')):
@@ -125,11 +121,9 @@ async def predict_file(file: UploadFile = File(...), api_key: str = Depends(veri
             data_json = json.loads(contents.decode('utf-8'))
             score_features = 'features' in data_json
             if score_features:
-                # C'est un GeoJSON (on extrait les propriétés)
                 properties_list = [feat.get('properties', {}) for feat in data_json['features']]
                 df = pd.DataFrame(properties_list)
             else:
-                # JSON classique tabulaire
                 df = pd.DataFrame(data_json)
         else:
             logger.warning(f"Format non supporté: {file.filename}")
@@ -137,14 +131,10 @@ async def predict_file(file: UploadFile = File(...), api_key: str = Depends(veri
             
         logger.info(f"✅ Données extraites : {df.shape[0]} lignes pour l'inférence.")
         
-        # Conserver l'ordre original des lignes
-        # Faire la prédiction (predict gèrera les erreurs de features manquantes)
         results_df = predictor.predict(df)
         
-        # Remplacer les NaN
         results_df = results_df.replace({pd.NA: None, np.nan: None})
         
-        # On ajoute lat/lon SEULEMENT si ils existent dans le CSV soumis
         columns_to_return = []
         if 'latitude' in results_df.columns:
             columns_to_return.append('latitude')
@@ -173,22 +163,19 @@ async def predict_file(file: UploadFile = File(...), api_key: str = Depends(veri
 @app.post("/predict/pixel/")
 def predict_pixel(data: Dict[str, Any] = Body(...), api_key: str = Depends(verify_api_key)):
     """
-    Endpoint acceptant un objet JSON représentant un seul point (pixel).
-    Idéal pour des requêtes unitaires "en temps réel".
+    Endpoint acceptant un objet JSON représentant un seul point (pixel) Sentinel-2.
     """
     logger.info("🎯 Requête unitaire reçue pour un pixel.")
     if not predictor:
         raise HTTPException(status_code=503, detail="Modèle IA non chargé sur le serveur.")
         
     try:
-        # data est un simple dictionnaire venant du Body json
-        # On s'assure qu'il y a au moins une donnée
         if not data:
              raise ValueError("Le corps de la requête JSON est vide.")
              
         df_pixel = pd.DataFrame([data])
-        
         results_df = predictor.predict(df_pixel)
+
         
         result_dict = {
             "prediction_label": results_df.iloc[0]['prediction_label'],

@@ -81,8 +81,12 @@ Pour les développeurs et curieux qui souhaitent explorer le repository :
 - ⚙️ **Infrastructure & Ops** :
   - 📄 [`Dockerfile`](./Dockerfile) & 📄 [`docker-compose.prod.yml`](./docker-compose.prod.yml) : Fichiers de conteneurisation.
   - 📄 [`requirements-prod.txt`](./requirements-prod.txt) : Dépendances allégées pour l'environnement d'exécution de l'API.
+- 📜 **Gouvernance & Open Source** :
+  - 📄 [`LICENSE`](./LICENSE) : Définition des droits d'utilisation (CC-BY-NC-4.0).
+  - 📄 [`CONTRIBUTING.md`](./CONTRIBUTING.md) : Guide d'apport de contributions et standards du repository.
+  - 📄 [`CITATION.cff`](./CITATION.cff) : Métadonnées standardisées pour la citation du projet en recherche.
 
 ---
 
-## Prochaines étapes
-* **🔜 Interface Web (Démo / UI)** : Création d’un front-end interactif (Dashboard) interfaçant l'API pour permettre un upload utilisateur simplifié, et la projection visuelle des cartes prédictives spatiales.
+## 🔜 Prochaines étapes
+* **Interface Web (Démo / UI)** : Création d’un front-end interactif (Dashboard) interfaçant l'API pour permettre un upload utilisateur simplifié, et la projection visuelle des cartes prédictives spatiales.
