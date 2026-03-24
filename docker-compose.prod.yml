@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  api:
+    image: kjddktech/forestwatchtg-api:latest
+    container_name: forestwatchtg_api_prod
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./models:/app/models
+      - ./logs:/app/api/logs
+    restart: unless-stopped

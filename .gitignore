@@ -9,3 +9,5 @@ __pycache__/
 data/
 models
 InitialProcess.md
+
+docker-compose.yml

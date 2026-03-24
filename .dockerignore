@@ -1,0 +1,31 @@
+# Environnements virtuels
+forestwatchtgvenv/
+venv/
+env/
+.env
+
+# Fichiers de cache Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+notebooks/
+
+# Dossiers locaux contenant des données sensibles ou très volumineuses
+data/
+models/
+api/logs/
+
+# Git
+.git/
+.github/
+
+# Docker local
+docker-compose.yml
+
